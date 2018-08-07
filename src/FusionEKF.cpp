@@ -30,13 +30,31 @@ FusionEKF::FusionEKF() {
   R_radar_ << 0.09, 0, 0,
         0, 0.0009, 0,
         0, 0, 0.09;
-
+  
+  // H is the measurement matrix that projects from the 4D state, your belief about the object's current state, into the 2D measurement space of the sensor (Lesson 5 - 11. Laser Measurements)
+  H_laser_ << 1, 0, 0, 0,
+        0, 1, 0, 0;
+  
   /**
   TODO:
     * Finish initializing the FusionEKF.
     * Set the process and measurement noises
   */
-
+  ekf_.F_ = MatrixXd(4, 4); // 4 x 4 state transition matrix
+  ekf_.F_ << 1, 0, 0, 0,
+             0, 1, 0, 0,
+             0, 0, 1, 0,
+             0, 0, 0, 1;
+  
+  ekf_.P_ = MatrixXd(4, 4); // 4 x 4 state covariance matrix
+  ekf_.P_ << 1, 0, 0, 0,
+             0, 1, 0, 0,
+             0, 0, 1000, 0,
+             0, 0, 0, 1000;
+  
+  // acceleration noise components
+   noise_ax = 5;
+   noise_ay = 5;
 
 }
 

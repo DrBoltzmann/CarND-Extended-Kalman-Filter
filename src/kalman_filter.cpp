@@ -31,7 +31,8 @@ void KalmanFilter::Predict() {
 void KalmanFilter::Update(const VectorXd &z) {
   
   // update the state by using Kalman Filter equations
-  VectorXd y = z - H_ * x_;
+  VectorXd z_pred = H_ * x_;
+  VectorXd y = z - z_pred;
   MatrixXd Ht = H_.transpose();
   MatrixXd S = H_ * P_ * Ht + R_;
   MatrixXd Si = S.inverse();
@@ -53,38 +54,39 @@ void KalmanFilter::Update(const VectorXd &z) {
 void KalmanFilter::UpdateEKF(const VectorXd &z) {
   // * update the state by using Extended Kalman Filter equations
   
-  float x = x_(0);
-  float y = x_(1);
-  float vx = x_(2);
-  float vy = x_(3);
+  //float x = ekf_.x_(0);
+  //float y = ekf_.x_(1);
+  //float vx = ekf_.x_(2);
+  //float vy = ekf_.x_(3);
   
-  float ro = sqrt(x * x + y * y);
-  float theta = atan2(y, x);
-  //float rho_dot = (x * vx + y * vy) / rho;
+  float ro = sqrt(x_(0) * x_(0) + x_(1) * x_(1));
+  float theta = atan2(x_(1), x_(0));
+  float ro_dot = (x_(0) * x_(2) + x_(1) * x_(3)) / ro;
+  //float ro_dot;
   
-  float ro_dot;  
-  if (fabs(ro) < 0.0001) {
-    ro_dot = 0;
-  } else {
-    ro_dot = (x*vx + y*vy)/ro;
-  }
+//  if (fabs(ro) < 0.0001) {
+//    ro_dot = 0;
+//  } else {
+//    ro_dot = (x*vx + y*vy)/ro;
+//  }
   
-  //VectorXd z_pred = VectorXd(3);
-  VectorXd z_pred(3);
+  VectorXd z_pred = VectorXd(3);
+  //VectorXd z_pred(3);
   
   z_pred << ro, theta, ro_dot;
   
-  VectorXd yy = z - z_pred;
+  VectorXd y = z - z_pred;
   
   MatrixXd Ht = H_.transpose();
   MatrixXd S = H_ * P_ * Ht + R_;
   MatrixXd Si = S.inverse();
-  MatrixXd PHt = P_ * Ht;
+  //MatrixXd PHt = P_ * Ht;
   MatrixXd K = P_ * Ht * Si;
   
   // new state
-  x_ = x_ + (K * yy);
+  x_ = x_ + (K * y);
   long x_size = x_.size();
   MatrixXd I = MatrixXd::Identity(x_size, x_size);
+  //MatrixXd Ft = F.transpose();
   P_ = (I - K * H_) * P_;
 }

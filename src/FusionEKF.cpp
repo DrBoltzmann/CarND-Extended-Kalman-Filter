@@ -24,20 +24,20 @@ FusionEKF::FusionEKF() {
 
   //measurement covariance matrix - laser
   R_laser_ << 0.0225, 0,
-        0, 0.0225;
+              0, 0.0225;
 
   //measurement covariance matrix - radar
   R_radar_ << 0.09, 0, 0,
-        0, 0.0009, 0,
-        0, 0, 0.09;
+              0, 0.0009, 0,
+              0, 0, 0.09;
   
   // H is the measurement matrix that projects from the 4D state, your belief about the object's current state, into the 2D measurement space of the sensor (Lesson 5 - 11. Laser Measurements)
   H_laser_ << 1, 0, 0, 0,
-        0, 1, 0, 0;
+              0, 1, 0, 0;
   
   Hj_ << 1, 1, 0, 0,
-  		1, 1, 0, 0,
-  		1, 1, 1, 1;
+         1, 1, 0, 0,
+         1, 1, 1, 1;
   
   // * Finish initializing the FusionEKF
   // * Set the process and measurement noises
@@ -78,7 +78,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     // first measurement
     cout << "EKF: " << endl;
     ekf_.x_ = VectorXd(4);
-    ekf_.x_ << 1, 1, 1, 1;
+    ekf_.x_ << 1, 1, 1, 1; // last two values can be tweaked to improve RMSE
 
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
       // Convert radar from polar (theta, r) to cartesian (x, y) coordinates and initialize state.
@@ -149,6 +149,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
   if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
     // Radar updates
     ekf_.H_ = tools.CalculateJacobian(ekf_.x_); //call the function defined in tools.cpp to calculate the Jacobian
+    //ekf_.H_ = Hj_
     ekf_.R_ = R_radar_;
     ekf_.UpdateEKF(measurement_pack.raw_measurements_);
   } else {

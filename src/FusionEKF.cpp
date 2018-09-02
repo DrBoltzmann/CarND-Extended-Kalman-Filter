@@ -35,6 +35,10 @@ FusionEKF::FusionEKF() {
   H_laser_ << 1, 0, 0, 0,
         0, 1, 0, 0;
   
+  Hj_ << 1, 1, 0, 0,
+  		1, 1, 0, 0,
+  		1, 1, 1, 1;
+  
   // * Finish initializing the FusionEKF
   // * Set the process and measurement noises
 
@@ -85,6 +89,8 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       
       ekf_.x_(0) = rho * cos(theta);
       ekf_.x_(1) = rho * sin(theta);
+      ekf_.x_(2) = rho_dot * cos(theta);
+      ekf_.x_(3) = rho_dot * sin(theta);
     }
     else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
       // Initialize the state
@@ -94,7 +100,9 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
     // done initializing, no need to predict or update
     // ekf_.F << set to 1 diagonal matrix
-    //previous timestamp = measurement_pack.timestamp;
+    
+    previous timestamp = measurement_pack.timestamp;
+    
     is_initialized_ = true;
     return;
   }

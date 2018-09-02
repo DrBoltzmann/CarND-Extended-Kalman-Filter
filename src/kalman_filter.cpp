@@ -23,61 +23,74 @@ void KalmanFilter::Init(VectorXd &x_in, MatrixXd &P_in, MatrixXd &F_in,
 void KalmanFilter::Predict() {
   // predict the state
   //x = F * x + u; where u is external motion
-  x = F_ * x_;
+  x_ = F_ * x_;
   MatrixXd Ft = F_.transpose();
   P_ = F_ * P_ * Ft + Q_;
 }
 
 void KalmanFilter::Update(const VectorXd &z) {
+  
   // update the state by using Kalman Filter equations
-  VectorXd y = z - H * x;
-  MatrixXd Ht = H.transpose();
-  MatrixXd S = H * P * Ht + R;
+  VectorXd y = z - H_ * x_;
+  MatrixXd Ht = H_.transpose();
+  MatrixXd S = H_ * P_ * Ht + R_;
   MatrixXd Si = S.inverse();
-  MatrixXd K =  P * Ht * Si;
+  //MatrixXd PHt = P_ * Ht;
+  MatrixXd K =  P_ * Ht * Si;
   
   // New state
-  x = x + (K * y);
-  P = (I - K * H) * P;
+  x_ = x_ + (K * y);
+  int x_size = x_.size();
+  MatrixXd I = MatrixXd::Identity(x_size, x_size);
+  P_ = (I - K * H_) * P_;
   
   //KF Prediction step
   //x = F * x + u;
   //MatrixXd Ft = F.transpose();
   //P = F * P * Ft + Q;
-  
 }
 
 void KalmanFilter::UpdateEKF(const VectorXd &z) {
   // * update the state by using Extended Kalman Filter equations
   
-  float x = ekf_.x_(0);
-  float y = ekf_.x_(1);
-  float vx = ekf_.x_(2);
-  float vy = ekf_.x_(3);
+  float x = x_(0);
+  float y = x_(1);
+  float vx = x_(2);
+  float vy = x_(3);
   
   float rho = sqrt(x * x + y * y);
   float theta = atan2(y, x);
   float ro_dot = (x * vx + y * vy) / rho;
   
-   VectorXd z_pred = VectorXd(3);
-   z_pred << rho, theta, ro_dot;
+  /*
+  float rho = sqrt(x_(0) * x_(0) + x_(1) * x_(1));
+  float theta = atan2(x_(1), x_(0));
+  float ro_dot = () / rho
+  */  
   
-  VectorXd y = z - z_pred;
+  //VectorXd z_pred = VectorXd(3);
+  VectorXd z_pred(3);
   
-  MatrixXd Ht = H.transpose();
-  MatrixXd S = H * P * Ht + R;
+  z_pred << rho, theta, ro_dot;
+  
+  VectorXd yy = z - z_pred;
+  
+  MatrixXd Ht = H_.transpose();
+  MatrixXd S = H_ * P_ * Ht + R_;
   MatrixXd Si = S.inverse();
-  MatrixXd K = P * Ht * Si;
+  MatrixXd PHt = P_ * Ht;
+  MatrixXd K = P_ * Ht * Si;
   
   // new state
+  x_ = x_ + (K * yy);
+  long x_size = x_.size();
+  MatrixXd I = MatrixXd::Identity(x_size, x_size);
+  P_ = (I - K * H_) * P_;
   
-  x = x + (K * y);
-  P = (I - K * H) * P; 
-  
+  /*
   // KF Prediction step
-  
-  x = F * x + u;
+  x = F_ * x + u;
   MatrixXd Ft = F.transpose();
-  P = F * P * Ft + Q;
-  
+  P_ = F * P * Ft + Q;
+  */
 }

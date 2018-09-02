@@ -60,18 +60,19 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   
   float rho = sqrt(x * x + y * y);
   float theta = atan2(y, x);
-  float ro_dot = (x * vx + y * vy) / rho;
+  //float rho_dot = (x * vx + y * vy) / rho;
   
-  /*
-  float rho = sqrt(x_(0) * x_(0) + x_(1) * x_(1));
-  float theta = atan2(x_(1), x_(0));
-  float ro_dot = () / rho
-  */  
+  float rho_dot;  
+  if (fabs(rho) < 0.0001) {
+    rho_dot = 0;
+  } else {
+    rho_dot = (x*vx + y*vy)/rho;
+  }
   
   //VectorXd z_pred = VectorXd(3);
   VectorXd z_pred(3);
   
-  z_pred << rho, theta, ro_dot;
+  z_pred << rho, theta, rho_dot;
   
   VectorXd yy = z - z_pred;
   
@@ -86,11 +87,4 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   long x_size = x_.size();
   MatrixXd I = MatrixXd::Identity(x_size, x_size);
   P_ = (I - K * H_) * P_;
-  
-  /*
-  // KF Prediction step
-  x = F_ * x + u;
-  MatrixXd Ft = F.transpose();
-  P_ = F * P * Ft + Q;
-  */
 }

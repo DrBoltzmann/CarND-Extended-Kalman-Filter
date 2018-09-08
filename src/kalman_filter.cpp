@@ -40,7 +40,8 @@ void KalmanFilter::Update(const VectorXd &z) {
   
   // New state
   x_ = x_ + (K * y);
-  int x_size = x_.size();
+  long x_size = x_.size();
+  //int x_size = x_.size();
   MatrixXd I = MatrixXd::Identity(x_size, x_size);
   P_ = (I - K * H_) * P_;
   
@@ -60,6 +61,10 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   
   float ro = sqrt(px * px + py * py);
   float theta = atan2(py, px);
+  
+  if(ro < 0.000001)
+   ro = 0.000001;
+  
   float ro_dot = (px * vx + py * vy) / ro;
   //float ro_dot;
   
@@ -69,8 +74,8 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
 //    ro_dot = (x*vx + y*vy)/ro;
 //  }
   
-  VectorXd z_pred = VectorXd(3);
-  //VectorXd z_pred(3);
+  //VectorXd z_pred = VectorXd(3);
+  VectorXd z_pred(3);
   
   z_pred << ro, theta, ro_dot;
   
@@ -83,7 +88,7 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   
   // new state
   x_ = x_ + (K * y);
-
+  long x_size = x_.size();
   MatrixXd I = MatrixXd::Identity(4, 4);
 
   P_ = (I - K * H_) * P_;

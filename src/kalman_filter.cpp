@@ -1,7 +1,10 @@
 #include "kalman_filter.h"
-
+#include <iostream>
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
+
+using namespace std;
+using std::vector;
 
 // Please note that the Eigen library does not initialize 
 // VectorXd or MatrixXd objects with zeros upon creation.
@@ -21,22 +24,30 @@ void KalmanFilter::Init(VectorXd &x_in, MatrixXd &P_in, MatrixXd &F_in,
 }
 
 void KalmanFilter::Predict() {
+  
+  std::cout<<"Initial X is "<<x_<<std::endl;
+  std::cout<<"Initial P is "<<P_<<std::endl;
+  std::cout<<"Initial Q is "<<Q_<<std::endl;  
+  
   // predict the state
-  //x = F * x + u; where u is external motion
   x_ = F_ * x_;
   MatrixXd Ft = F_.transpose();
   P_ = F_ * P_ * Ft + Q_;
+  
+  std::cout<<"Predicted X is "<<x_<<std::endl;
+  std::cout<<"Predicted P is "<<P_<<std::endl;
 }
 
 void KalmanFilter::Update(const VectorXd &z) {
   
   // update the state by using Kalman Filter equations
   VectorXd z_pred = H_ * x_;
-  VectorXd y = z - z_pred;
+  MatrixXd y = z - z_pred;
   MatrixXd Ht = H_.transpose();
   MatrixXd S = H_ * P_ * Ht + R_;
   MatrixXd Si = S.inverse();
-  MatrixXd K =  P_ * Ht * Si;
+  MatrixXd PHt = P_ * Ht;
+  MatrixXd K =  PHt * Si;
   
   // New state
   x_ = x_ + (K * y);
@@ -44,52 +55,65 @@ void KalmanFilter::Update(const VectorXd &z) {
   //int x_size = x_.size();
   MatrixXd I = MatrixXd::Identity(x_size, x_size);
   P_ = (I - K * H_) * P_;
-  
-  //KF Prediction step
-  //x = F * x + u;
-  //MatrixXd Ft = F.transpose();
-  //P = F * P * Ft + Q;
 }
 
 void KalmanFilter::UpdateEKF(const VectorXd &z) {
   // * update the state by using Extended Kalman Filter equations
   
+  VectorXd h = VectorXd(3);
+  
+  h(0) = sqrt( x_(0) *  x_(0) + x_(1) * x_(1) );
+  h(1) = atan2( x_(1) , x_(0) );
+  h(2) = (x_(0) * x_(2) + x_(1) * x_(3)) / h(0);  
+  
+  /*
   float px = x_(0);
   float py = x_(1);
   float vx = x_(2);
   float vy = x_(3);
+  */
+  // Equations for h_func below
+  //float eq1 = sqrt(px * px + py * py);
   
-  float ro = sqrt(px * px + py * py);
-  float theta = atan2(py, px);
+  //check division by zero
+  /*
+  if(eq1 < .00001) {
+    px += .001;
+    py += .001;
+    eq1 = sqrt(px * px + py * py);
+  }
+  float eq2 = atan2(py,px);
+  float eq3 = (px*vx+py*vy)/eq1;
+  */
+  //Feed in equations above
+  //VectorXd H_func(3);
   
-  if(ro < 0.000001)
-   ro = 0.000001;
-  
-  float ro_dot = (px * vx + py * vy) / ro;
-  //float ro_dot;
-  
-//  if (fabs(ro) < 0.0001) {
-//    ro_dot = 0;
-//  } else {
-//    ro_dot = (x*vx + y*vy)/ro;
-//  }
-  
-  //VectorXd z_pred = VectorXd(3);
-  VectorXd z_pred(3);
-  
-  z_pred << ro, theta, ro_dot;
-  
-  VectorXd y = z - z_pred;
+  //H_func << eq1, eq2, eq3;
+    
+  VectorXd y = z - h;
+
+  y(1) = atan2(sin(y(1)),cos(y(1)));
+/*  
+  // Normalize the angle
+  while (y(1)>M_PI) {
+    y(1) -= 2 * M_PI;
+  }
+  while (y(1)<-M_PI) {
+    y(1) += 2 * M_PI;
+  }
+*/
   
   MatrixXd Ht = H_.transpose();
   MatrixXd S = H_ * P_ * Ht + R_;
   MatrixXd Si = S.inverse();
-  MatrixXd K = P_ * Ht * Si;
+  MatrixXd PHt = P_ * Ht;
+  MatrixXd K = PHt * Si;
+  
+  std::cout<<"Kalman Gain is " << K<<std::endl;
   
   // new state
   x_ = x_ + (K * y);
   long x_size = x_.size();
-  MatrixXd I = MatrixXd::Identity(4, 4);
-
+  MatrixXd I = MatrixXd::Identity(x_size, x_size);
   P_ = (I - K * H_) * P_;
 }

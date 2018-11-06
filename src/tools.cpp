@@ -34,15 +34,13 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
 	rmse += residual;
   }
 
-  //calculate the mean
+  // Calculate the mean
   rmse = rmse/estimations.size();
 
-  //calculate the squared root
+  // Calculate the squared root
   rmse = rmse.array().sqrt();
 
-  //return the result
   return rmse;
-  
 }
 
 MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
@@ -51,7 +49,7 @@ MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
   
   MatrixXd Hj(3, 4);
 
-  // recover state parameters
+  // Recover state parameters
   float px = x_state(0);
   float py = x_state(1);
   float vx = x_state(2);
@@ -67,13 +65,7 @@ MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
   
   float c2 = sqrt(c1);
   float c3 = (c1 * c2);
-/*  
-  // Check division by zero
-  if (fabs(c1) < 0.0001){
-     std::cout << "CalculateJacobian() - Effor - Division by Zero" << std::endl;
-     return Hj;
-  }
- */
+
   // Compute the Jacobian matrix
   Hj << (px/c2), (py/c2), 0, 0,
        -(py/c1), (px/c1), 0, 0,

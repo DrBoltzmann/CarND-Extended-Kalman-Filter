@@ -1,10 +1,29 @@
-# Udacity CarND Term 2 - Controls-PID Project
+# Udacity CarND Term 2 - Extended Kalman Filter Project
 ## Self-Driving Car Engineer Nanodegree Program
 
 ### Project Goals
 The Extended Kalman Filter (EKF) project is focused on implementing the EKF in C++ to build a sensor fusion between radar and lidar measurement datasets in order to track the path of vehicle on a 2D plane in the Udacity simulator environment.
 
-Specifc project rubic point are detatiled here: https://review.udacity.com/#!/rubrics/1972/view
+Specifc project rubic point are detatiled here: https://review.udacity.com/#!/rubrics/748/view
+
+The solution follows the standard solution path: https://youtu.be/J7WK9gEUltM
+
+### Accuracy 
+
+px, py, vx, vy output coordinates must have an RMSE <= [.11, .11, 0.52, 0.52] when using the file: "obj_pose-laser-radar-synthetic-input.txt" which is the same data file the simulator uses for Dataset 1.
+
+| RMSE  | Value  |
+|-------|--------|
+| X     | 0.0945 |
+| Y     | 0.0846 |
+| VX    | 0.3032 |
+| VY    | 0.3963 |
+
+![Simulator Output](/EKF_DataSet_1_Output.png)
+
+
+
+
 
 
 # Extended Kalman Filter Project Starter Code

@@ -29,7 +29,7 @@ void KalmanFilter::Predict() {
   std::cout<<"Initial P is "<<P_<<std::endl;
   std::cout<<"Initial Q is "<<Q_<<std::endl;  
   
-  // predict the state
+  // Predict the state
   x_ = F_ * x_;
   MatrixXd Ft = F_.transpose();
   P_ = F_ * P_ * Ft + Q_;
@@ -40,7 +40,7 @@ void KalmanFilter::Predict() {
 
 void KalmanFilter::Update(const VectorXd &z) {
   
-  // update the state by using Kalman Filter equations
+  // Update the state by using Kalman Filter equations
   VectorXd z_pred = H_ * x_;
   MatrixXd y = z - z_pred;
   MatrixXd Ht = H_.transpose();
@@ -52,7 +52,6 @@ void KalmanFilter::Update(const VectorXd &z) {
   // New state
   x_ = x_ + (K * y);
   long x_size = x_.size();
-  //int x_size = x_.size();
   MatrixXd I = MatrixXd::Identity(x_size, x_size);
   P_ = (I - K * H_) * P_;
 }
@@ -65,44 +64,11 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   h(0) = sqrt( x_(0) *  x_(0) + x_(1) * x_(1) );
   h(1) = atan2( x_(1) , x_(0) );
   h(2) = (x_(0) * x_(2) + x_(1) * x_(3)) / h(0);  
-  
-  /*
-  float px = x_(0);
-  float py = x_(1);
-  float vx = x_(2);
-  float vy = x_(3);
-  */
-  // Equations for h_func below
-  //float eq1 = sqrt(px * px + py * py);
-  
-  //check division by zero
-  /*
-  if(eq1 < .00001) {
-    px += .001;
-    py += .001;
-    eq1 = sqrt(px * px + py * py);
-  }
-  float eq2 = atan2(py,px);
-  float eq3 = (px*vx+py*vy)/eq1;
-  */
-  //Feed in equations above
-  //VectorXd H_func(3);
-  
-  //H_func << eq1, eq2, eq3;
     
   VectorXd y = z - h;
 
   y(1) = atan2(sin(y(1)),cos(y(1)));
-/*  
-  // Normalize the angle
-  while (y(1)>M_PI) {
-    y(1) -= 2 * M_PI;
-  }
-  while (y(1)<-M_PI) {
-    y(1) += 2 * M_PI;
-  }
-*/
-  
+
   MatrixXd Ht = H_.transpose();
   MatrixXd S = H_ * P_ * Ht + R_;
   MatrixXd Si = S.inverse();
@@ -111,7 +77,7 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   
   std::cout<<"Kalman Gain is " << K<<std::endl;
   
-  // new state
+  // New state
   x_ = x_ + (K * y);
   long x_size = x_.size();
   MatrixXd I = MatrixXd::Identity(x_size, x_size);
